@@ -2,41 +2,14 @@ import { useState } from 'react'
 import {
   Box,
   ChakraProvider,
-  Code,
   Container,
   FormControl,
   FormLabel,
   Heading,
   Input,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
 } from '@chakra-ui/react'
-import { Argument, parseCommandLineArgs, getCommandLineOptionString } from './parser'
-
-const renderTableOfArgs = ({ args }: { args: Argument[] }) => {
-  return (
-    <Table variant="simple" size="sm">
-      <Thead>
-        <Tr>
-          <Th>TYPE</Th>
-          <Th>ARGUMENT</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {args.map((opt, index) => (
-          <Tr key={index}>
-            <Td>{opt.type}</Td>
-            <Td><Code>{getCommandLineOptionString(opt)}</Code></Td>
-          </Tr>
-        ))}
-      </Tbody>
-    </Table>
-  )
-}
+import CommandLineArgsTable from './CommandLineArgsTable';
+import { parseCommandLineArgs } from './parser'
 
 function App() {
   const spaceOptions = [
@@ -76,7 +49,7 @@ function App() {
           />
         </FormControl>
         <Box py={8}>
-          {renderTableOfArgs({ args: parsedArgs })}
+          <CommandLineArgsTable args={parsedArgs} />
         </Box>
       </Container>
     </ChakraProvider>
