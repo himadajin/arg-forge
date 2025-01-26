@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   Box,
   ChakraProvider,
+  Code,
   Container,
   FormControl,
   FormLabel,
@@ -9,7 +10,22 @@ import {
   Input,
 } from '@chakra-ui/react'
 import CommandLineArgsTable from './CommandLineArgsTable';
-import { parseCommandLineArgs } from './parser'
+import { Argument, parseCommandLineArgs } from './parser'
+
+function transformArgs(args: Argument[], updatedOutput: string): Argument[] {
+  // argsをディープコピーする
+  let result = args.map((arg) => ({ ...arg }));
+  if (updatedOutput !== "") {
+    const foundOutputArg = result.find((arg) => arg.option === "-o");
+    if (foundOutputArg) {
+      foundOutputArg.value = updatedOutput;
+    } else {
+      // "-o"が存在しないなら、新規追加する
+      result.push({ type: "option-space", option: "-o", value: updatedOutput });
+    }
+  }
+  return result;
+}
 
 function App() {
   const spaceOptions = [
@@ -31,6 +47,8 @@ function App() {
   ];
 
   const [commandLine, setCommandLine] = useState("");
+  const [updatedOutputFile, setUpdatedOutputFile] = useState("");
+
   const parsedArgs = parseCommandLineArgs(commandLine, spaceOptions);
 
   return (
@@ -39,8 +57,7 @@ function App() {
         <Heading mb={4} size="lg">
           Command-line argument editor
         </Heading>
-
-        <FormControl>
+        <FormControl paddingTop={8}>
           <FormLabel>Input</FormLabel>
           <Input
             placeholder="clang -O3 main.c -o a.out"
@@ -48,8 +65,18 @@ function App() {
             onChange={(e) => setCommandLine(e.target.value)}
           />
         </FormControl>
+        <Box py={4}>
+          <FormControl>
+            <FormLabel>Replace output filename ( <Code>-o</Code> )</FormLabel>
+            <Input
+              placeholder="output"
+              value={updatedOutputFile}
+              onChange={(e) => setUpdatedOutputFile(e.target.value)}
+            />
+          </FormControl>
+        </Box>
         <Box py={8}>
-          <CommandLineArgsTable args={parsedArgs} />
+          <CommandLineArgsTable args={transformArgs(parsedArgs, updatedOutputFile)} />
         </Box>
       </Container>
     </ChakraProvider>
