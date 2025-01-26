@@ -15,19 +15,19 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react'
-import { Option, parseCommandLineOptions, getCommandLineOptionString } from './parser'
+import { Argument, parseCommandLineArgs, getCommandLineOptionString } from './parser'
 
-const renderTableOfOptions = ({ options }: { options: Option[] }) => {
+const renderTableOfArgs = ({ args }: { args: Argument[] }) => {
   return (
     <Table variant="simple" size="sm">
       <Thead>
         <Tr>
           <Th>TYPE</Th>
-          <Th>Argument</Th>
+          <Th>ARGUMENT</Th>
         </Tr>
       </Thead>
       <Tbody>
-        {options.map((opt, index) => (
+        {args.map((opt, index) => (
           <Tr key={index}>
             <Td>{opt.type}</Td>
             <Td><Code>{getCommandLineOptionString(opt)}</Code></Td>
@@ -58,7 +58,7 @@ function App() {
   ];
 
   const [commandLine, setCommandLine] = useState("");
-  const parsedOptions = parseCommandLineOptions(commandLine, spaceOptions);
+  const parsedArgs = parseCommandLineArgs(commandLine, spaceOptions);
 
   return (
     <ChakraProvider>
@@ -76,7 +76,7 @@ function App() {
           />
         </FormControl>
         <Box py={8}>
-          {renderTableOfOptions({ options: parsedOptions })}
+          {renderTableOfArgs({ args: parsedArgs })}
         </Box>
       </Container>
     </ChakraProvider>
