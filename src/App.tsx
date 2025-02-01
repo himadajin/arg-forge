@@ -16,6 +16,7 @@ import JSONArgsViewer from './JSONArgsViewer';
 function transformArgs(args: Argument[], updatedInput: string, updatedOutput: string): Argument[] {
   // argsをディープコピーする
   let result = args.map((arg) => ({ ...arg }));
+
   // output の更新
   if (updatedOutput !== "") {
     const foundOutputArg = result.find((arg) => arg.option === "-o");
@@ -27,14 +28,15 @@ function transformArgs(args: Argument[], updatedInput: string, updatedOutput: st
       result.push({ type: "option-space", option: "-o", value: updatedOutput });
     }
   }
-  // input の更新
+
+  // input の更新（最初の要素はコマンドとするため index > 0）
   if (updatedInput !== "") {
-    const foundInputArg = result.find((arg) => arg.type === "value" && arg.option === "");
-    if (foundInputArg) {
-      // 入力ファイルが見つかった場合は、更新する
-      foundInputArg.value = updatedInput;
+    const inputIndex = result.findIndex((arg, index) => index > 0 && arg.type === "value");
+    if (inputIndex !== -1) {
+      // 入力ファイルが見つかった場合は更新する
+      result[inputIndex].value = updatedInput;
     } else {
-      // 入力ファイルが見つからない場合は、新規追加する
+      // 入力ファイルが見つからない場合は新規追加する
       result.push({ type: "value", option: "", value: updatedInput });
     }
   }
