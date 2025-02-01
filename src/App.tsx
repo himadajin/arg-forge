@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react'
 import CommandLineArgsTable from './CommandLineArgsTable';
 import { Argument, parseCommandLineArgs } from './parser'
+import JSONArgsViewer from './JSONArgsViewer';
 
 function transformArgs(args: Argument[], updatedOutput: string): Argument[] {
   // argsをディープコピーする
@@ -50,6 +51,7 @@ function App() {
   const [updatedOutputFile, setUpdatedOutputFile] = useState("");
 
   const parsedArgs = parseCommandLineArgs(commandLine, spaceOptions);
+  const transformedArgs = transformArgs(parsedArgs, updatedOutputFile);
 
   return (
     <ChakraProvider>
@@ -75,8 +77,11 @@ function App() {
             />
           </FormControl>
         </Box>
+        <Box pb={4}>
+          <JSONArgsViewer parsedArgs={transformedArgs} />
+        </Box>
         <Box py={8}>
-          <CommandLineArgsTable args={transformArgs(parsedArgs, updatedOutputFile)} />
+          <CommandLineArgsTable args={transformedArgs} />
         </Box>
       </Container>
     </ChakraProvider>
