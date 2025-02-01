@@ -13,16 +13,29 @@ import CommandLineArgsTable from './CommandLineArgsTable';
 import { Argument, parseCommandLineArgs } from './parser'
 import JSONArgsViewer from './JSONArgsViewer';
 
-function transformArgs(args: Argument[], updatedOutput: string): Argument[] {
+function transformArgs(args: Argument[], updatedInput: string, updatedOutput: string): Argument[] {
   // argsをディープコピーする
   let result = args.map((arg) => ({ ...arg }));
+  // output の更新
   if (updatedOutput !== "") {
     const foundOutputArg = result.find((arg) => arg.option === "-o");
     if (foundOutputArg) {
+      // "-o"が存在するなら、更新する
       foundOutputArg.value = updatedOutput;
     } else {
       // "-o"が存在しないなら、新規追加する
       result.push({ type: "option-space", option: "-o", value: updatedOutput });
+    }
+  }
+  // input の更新
+  if (updatedInput !== "") {
+    const foundInputArg = result.find((arg) => arg.type === "value" && arg.option === "");
+    if (foundInputArg) {
+      // 入力ファイルが見つかった場合は、更新する
+      foundInputArg.value = updatedInput;
+    } else {
+      // 入力ファイルが見つからない場合は、新規追加する
+      result.push({ type: "value", option: "", value: updatedInput });
     }
   }
   return result;
@@ -49,9 +62,10 @@ function App() {
 
   const [commandLine, setCommandLine] = useState("");
   const [updatedOutputFile, setUpdatedOutputFile] = useState("");
+  const [updatedInputFile, setUpdatedInputFile] = useState(""); // 新規追加
 
   const parsedArgs = parseCommandLineArgs(commandLine, spaceOptions);
-  const transformedArgs = transformArgs(parsedArgs, updatedOutputFile);
+  const transformedArgs = transformArgs(parsedArgs, updatedInputFile, updatedOutputFile);
 
   return (
     <ChakraProvider>
@@ -69,6 +83,16 @@ function App() {
         </FormControl>
         <Box py={4}>
           <FormControl>
+            <FormLabel>Replace input filename</FormLabel>
+            <Input
+              placeholder="input file"
+              value={updatedInputFile}
+              onChange={(e) => setUpdatedInputFile(e.target.value)}
+            />
+          </FormControl>
+        </Box>
+        <Box pb={4}>
+          <FormControl>
             <FormLabel>Replace output filename ( <Code>-o</Code> )</FormLabel>
             <Input
               placeholder="output"
@@ -77,7 +101,7 @@ function App() {
             />
           </FormControl>
         </Box>
-        <Box pb={4}>
+        <Box py={4}>
           <JSONArgsViewer parsedArgs={transformedArgs} />
         </Box>
         <Box py={8}>
