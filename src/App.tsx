@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Box,
   ChakraProvider,
@@ -59,12 +59,18 @@ function App() {
     "-x"
   ];
 
-  const [commandLine, setCommandLine] = useState("");
-  const [updatedOutputFile, setUpdatedOutputFile] = useState("");
-  const [updatedInputFile, setUpdatedInputFile] = useState(""); // 新規追加
+  const [commandLineInput, setCommandLineInput] = useState("");
+  const [outputFile, setOutputFile] = useState("");
+  const [updatedInputFile, setUpdatedInputFile] = useState("");
 
-  const parsedArgs = parseCommandLineArgs(commandLine, spaceOptions);
-  const transformedArgs = transformArgs(parsedArgs, updatedInputFile, updatedOutputFile);
+  const parsedArgs = useMemo(
+    () => parseCommandLineArgs(commandLineInput, spaceOptions),
+    [commandLineInput, spaceOptions]
+  );
+  const transformedArgs = useMemo(
+    () => transformArgs(parsedArgs, updatedInputFile, outputFile),
+    [parsedArgs, updatedInputFile, outputFile]
+  );
 
   return (
     <ChakraProvider>
@@ -76,8 +82,8 @@ function App() {
           <FormLabel>Input</FormLabel>
           <Input
             placeholder="clang -O3 main.c -o a.out"
-            value={commandLine}
-            onChange={(e) => setCommandLine(e.target.value)}
+            value={commandLineInput}
+            onChange={(e) => setCommandLineInput(e.target.value)}
           />
         </FormControl>
         <Box py={4}>
@@ -95,8 +101,8 @@ function App() {
             <FormLabel>Replace output filename ( <Code>-o</Code> )</FormLabel>
             <Input
               placeholder="output"
-              value={updatedOutputFile}
-              onChange={(e) => setUpdatedOutputFile(e.target.value)}
+              value={outputFile}
+              onChange={(e) => setOutputFile(e.target.value)}
             />
           </FormControl>
         </Box>
