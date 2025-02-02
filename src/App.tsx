@@ -16,9 +16,10 @@ import {
   TabPanel,
   HStack,
 } from '@chakra-ui/react'
-import CommandLineArgsTable from './CommandLineArgsTable';
+import CommandLineArgsTable from './CommandLineArgsTable'
 import { Argument, parseCommandLineArgs } from './parser'
-import JSONArgsViewer from './JSONArgsViewer';
+import TextArgsViewer from './TextArgsViewer'
+import JSONArgsViewer from './JSONArgsViewer'
 
 function transformArgs(
   args: Argument[],
@@ -192,10 +193,14 @@ function App() {
 
         <Tabs pt={8}>
           <TabList>
+            <Tab>Text View</Tab>
             <Tab>JSON View</Tab>
             <Tab>Table View</Tab>
           </TabList>
           <TabPanels minH="100">
+            <TabPanel>
+              <TextArgsViewer parsedArgs={transformedArgs} />
+            </TabPanel>
             <TabPanel>
               <JSONArgsViewer parsedArgs={transformedArgs} />
             </TabPanel>
