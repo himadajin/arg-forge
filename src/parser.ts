@@ -1,13 +1,15 @@
 export type Token =
-  | { type: "option", value: string } //  -o, -v
+  | { type: "option", value: string } //  eg. "-option", "+option"
   | { type: "equal", value: "=" }   // "="
-  | { type: "value", value: string }; // input.c
+  | { type: "value", value: string } // eg. "value"
+  | { type: "redirect", value: string }; // e.g. ">", "2>&1"
 
 export type Argument =
   | { type: "option", option: string, value: "" }
   | { type: "option-space", option: string, value: string }
   | { type: "option-equal", option: string, value: string }
   | { type: "value", option: "", value: string }
+  | { type: "redirect", option: string, value: string };
 
 function findTokenEndIndex(input: string, start: number): number {
   let i = start;
@@ -31,17 +33,40 @@ function tokenizeCommandLine(input: string): Token[] {
       continue;
     }
 
+    // tokenize "2>&1"
+    if (input.slice(i).startsWith("2>&1")) {
+      tokens.push({ type: "redirect", value: "2>&1" });
+      i += 4;
+      continue;
+    }
+
+    // tokenize ">>", "2>"
+    if (input.slice(i).startsWith(">>") || input.slice(i).startsWith("2>")) {
+      tokens.push({ type: "redirect", value: input.slice(i, i + 2) });
+      i += 2;
+      continue;
+    }
+
+    // tokenize ">"
+    if (input[i] === ">") {
+      tokens.push({ type: "redirect", value: ">" });
+      i++;
+      continue;
+    }
+
+    // tokenize option, value
     if (input.slice(i).startsWith("-") || input.slice(i).startsWith("+")) {
-      // parse "-arg", "+arg"
+      // tokenize "-option", "+option"
       const endIndex = findTokenEndIndex(input, i);
       const option = input.slice(i, endIndex);
       tokens.push({ type: "option", value: option });
       i = endIndex;
     } else if (input[i] === "=") {
-      // '='
+      // tokenize "="
       tokens.push({ type: "equal", value: "=" });
       i++;
     } else {
+      // tokenize "value"
       const endIndex = findTokenEndIndex(input, i);
       const argument = input.slice(i, endIndex);
       tokens.push({ type: "value", value: argument });
@@ -56,7 +81,31 @@ function parseTokens(tokens: Token[], spaceOptions: string[]): Argument[] {
   const args: Argument[] = []
   let i = 0;
   while (i < tokens.length) {
-    // -opt=value
+    // parse redirect
+    if (tokens[i].type === "redirect") {
+      // parse "2>&1"
+      if (tokens[i].value === "2>&1") {
+        args.push({
+          type: "redirect",
+          option: tokens[i].value,
+          value: ""
+        });
+        i++;
+        continue;
+      }
+      // parse ">>", ">" with value
+      if (i + 1 < tokens.length && tokens[i + 1].type === "value") {
+        args.push({
+          type: "redirect",
+          option: tokens[i].value,
+          value: tokens[i + 1].value
+        });
+        i += 2;
+        continue;
+      }
+    }
+
+    // parse option with equal
     if (i + 2 < tokens.length &&
       tokens[i].type === "option" &&
       tokens[i + 1].type === "equal" &&
@@ -70,7 +119,7 @@ function parseTokens(tokens: Token[], spaceOptions: string[]): Argument[] {
       continue;
     }
 
-    // -o value
+    // parse option with space
     if (i + 1 < tokens.length &&
       tokens[i].type === "option" &&
       spaceOptions.includes(tokens[i].value) &&
@@ -84,15 +133,15 @@ function parseTokens(tokens: Token[], spaceOptions: string[]): Argument[] {
       continue;
     }
 
-    // input.txt
     if (tokens[i].type === "value") {
+      // parse value
       args.push({
         type: "value",
         option: "",
         value: tokens[i].value
       })
     } else if (tokens[i].type === "option") {
-      // -O3
+      // parse option without value
       args.push({
         type: "option",
         option: tokens[i].value,
@@ -119,6 +168,8 @@ export function getCommandLineOptionString(args: Argument): string {
       return args.option + "=" + args.value;
     case "option-space":
       return args.option + " " + args.value;
+    case "redirect":
+      return args.value ? (args.option + " " + args.value) : args.option;
   }
 }
 
