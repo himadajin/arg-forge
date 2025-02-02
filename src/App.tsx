@@ -8,6 +8,11 @@ import {
   FormLabel,
   Heading,
   Input,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
 } from '@chakra-ui/react'
 import CommandLineArgsTable from './CommandLineArgsTable';
 import { Argument, parseCommandLineArgs } from './parser'
@@ -89,7 +94,7 @@ function App() {
 
   return (
     <ChakraProvider>
-      <Container maxW="container.md" py={8}>
+      <Container maxW="container.md" py={8} pb={64}>
         <Heading mb={4} size="lg">
           Command-line argument editor
         </Heading>
@@ -131,12 +136,20 @@ function App() {
             />
           </FormControl>
         </Box>
-        <Box py={4}>
-          <JSONArgsViewer parsedArgs={transformedArgs} />
-        </Box>
-        <Box py={8}>
-          <CommandLineArgsTable args={transformedArgs} />
-        </Box>
+        <Tabs>
+          <TabList>
+            <Tab>JSON View</Tab>
+            <Tab>Table View</Tab>
+          </TabList>
+          <TabPanels minH="100">
+            <TabPanel>
+              <JSONArgsViewer parsedArgs={transformedArgs} />
+            </TabPanel>
+            <TabPanel>
+              <CommandLineArgsTable args={transformedArgs} />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Container>
     </ChakraProvider>
   )
