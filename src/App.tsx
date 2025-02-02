@@ -133,7 +133,7 @@ function App() {
 
   return (
     <ChakraProvider>
-      <Container maxW="container.md" py={8} pb={64}>
+      <Container maxW="container.xl" py={8} pb={64}>
         <Heading mb={4} size="lg">
           Command-line argument editor
         </Heading>
