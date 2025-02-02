@@ -26,6 +26,7 @@ function transformArgs(
   updatedOutput: string,
   newRedirectFileName: string,
   removeHeadCmd: boolean,
+  includeStderr: boolean,
 ): Argument[] {
   if (args.length === 0) {
     return [];
@@ -69,6 +70,23 @@ function transformArgs(
     result.shift();
   }
 
+  // append 2>&1 if needed
+  if (includeStderr) {
+    const redirectArgIdx = result.findLastIndex(
+      arg =>
+        (arg.type === "redirect") &&
+        (arg.option === ">")
+    );
+    const stderrArgIdx = result.findLastIndex(
+      arg =>
+        (arg.type === "redirect") &&
+        (arg.option === "2>&1")
+    );
+    if (redirectArgIdx !== -1 && stderrArgIdx === -1) {
+      result.push({ type: "redirect", option: "2>&1", value: "" });
+    }
+  }
+
   return result;
 }
 
@@ -96,7 +114,8 @@ function App() {
   const [updatedInputFile, setUpdatedInputFile] = useState("");
   const [newRedirectFileName, setNewRedirectFileName] = useState("");
 
-  const [removeHeadCmd, setRemoveHeadCmd] = useState(false);
+  const [removeHeadCmd, setRemoveHeadCmd] = useState(true);
+  const [includeStderr, setIncludeStderr] = useState(true);
 
   const parsedArgs = useMemo(
     () => parseCommandLineArgs(commandLineInput, spaceOptions),
@@ -104,8 +123,11 @@ function App() {
   );
   const transformedArgs = useMemo(
     () => transformArgs(
-      parsedArgs, updatedInputFile, outputFile, newRedirectFileName, removeHeadCmd),
-    [parsedArgs, updatedInputFile, outputFile, newRedirectFileName]
+      parsedArgs, updatedInputFile, outputFile, newRedirectFileName,
+      removeHeadCmd, includeStderr
+    ),
+    [parsedArgs, updatedInputFile, outputFile, newRedirectFileName,
+      removeHeadCmd, includeStderr]
   );
 
   return (
@@ -155,10 +177,16 @@ function App() {
 
         <HStack spacing={4} py={4}>
           <Checkbox
-            checked={removeHeadCmd}
+            isChecked={removeHeadCmd}
             onChange={(e) => setRemoveHeadCmd(e.target.checked)}
           >
             Remove head command.
+          </Checkbox>
+          <Checkbox
+            isChecked={includeStderr}
+            onChange={(e) => setIncludeStderr(e.target.checked)}
+          >
+            Redirect stderr to stdout. ( <Code>2{'>&'}1</Code> )
           </Checkbox>
         </HStack>
 
