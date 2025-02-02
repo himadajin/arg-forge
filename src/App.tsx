@@ -149,7 +149,9 @@ function App() {
           <FormControl>
             <FormLabel>Replace input filename</FormLabel>
             <Input
-              placeholder="input file"
+              placeholder={
+                transformedArgs.slice(1).findLast(arg => arg.type === "value")?.value || "input filename"
+              }
               value={updatedInputFile}
               onChange={(e) => setUpdatedInputFile(e.target.value)}
             />
@@ -159,7 +161,9 @@ function App() {
           <FormControl>
             <FormLabel>Replace output filename ( <Code>-o</Code> )</FormLabel>
             <Input
-              placeholder="output"
+              placeholder={
+                transformedArgs.find(arg => arg.option === "-o")?.value || "output filename"
+              }
               value={outputFile}
               onChange={(e) => setOutputFile(e.target.value)}
             />
@@ -169,7 +173,9 @@ function App() {
           <FormControl>
             <FormLabel>Replace redirect filename ( <Code>{'>'} output.log </Code> )</FormLabel>
             <Input
-              placeholder="output"
+              placeholder={
+                transformedArgs.find(arg => arg.option === ">")?.value || "redirect filename"
+              }
               value={newRedirectFileName}
               onChange={(e) => setNewRedirectFileName(e.target.value)}
             />
