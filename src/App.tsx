@@ -29,9 +29,9 @@ function transformArgs(args: Argument[], updatedInput: string, updatedOutput: st
     }
   }
 
-  // input の更新（最初の要素はコマンドとするため index > 0）
+  // input の更新（配列内の最後の `type: "value"` の要素を入力ファイルとする）
   if (updatedInput !== "") {
-    const inputIndex = result.findIndex((arg, index) => index > 0 && arg.type === "value");
+    const inputIndex = result.findLastIndex(arg => arg.type === "value");
     if (inputIndex !== -1) {
       // 入力ファイルが見つかった場合は更新する
       result[inputIndex].value = updatedInput;
