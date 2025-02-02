@@ -13,7 +13,12 @@ import CommandLineArgsTable from './CommandLineArgsTable';
 import { Argument, parseCommandLineArgs } from './parser'
 import JSONArgsViewer from './JSONArgsViewer';
 
-function transformArgs(args: Argument[], updatedInput: string, updatedOutput: string): Argument[] {
+function transformArgs(
+  args: Argument[],
+  updatedInput: string,
+  updatedOutput: string,
+  newRedirectFileName: string
+): Argument[] {
   let result = args.map((arg) => ({ ...arg }));
 
   if (updatedOutput !== "") {
@@ -35,6 +40,15 @@ function transformArgs(args: Argument[], updatedInput: string, updatedOutput: st
     } else {
       // 入力ファイルが見つからない場合は新規追加する
       result.push({ type: "value", option: "", value: updatedInput });
+    }
+  }
+
+  if (newRedirectFileName !== "") {
+    const redirectArg = result.findLast(arg => arg.type === "redirect" && arg.option === ">");
+    if (redirectArg) {
+      redirectArg.value = newRedirectFileName;
+    } else {
+      result.push({ type: "redirect", option: ">", value: newRedirectFileName });
     }
   }
   return result;
@@ -62,14 +76,15 @@ function App() {
   const [commandLineInput, setCommandLineInput] = useState("");
   const [outputFile, setOutputFile] = useState("");
   const [updatedInputFile, setUpdatedInputFile] = useState("");
+  const [newRedirectFileName, setNewRedirectFileName] = useState("");
 
   const parsedArgs = useMemo(
     () => parseCommandLineArgs(commandLineInput, spaceOptions),
     [commandLineInput, spaceOptions]
   );
   const transformedArgs = useMemo(
-    () => transformArgs(parsedArgs, updatedInputFile, outputFile),
-    [parsedArgs, updatedInputFile, outputFile]
+    () => transformArgs(parsedArgs, updatedInputFile, outputFile, newRedirectFileName),
+    [parsedArgs, updatedInputFile, outputFile, newRedirectFileName]
   );
 
   return (
@@ -103,6 +118,16 @@ function App() {
               placeholder="output"
               value={outputFile}
               onChange={(e) => setOutputFile(e.target.value)}
+            />
+          </FormControl>
+        </Box>
+        <Box pb={4}>
+          <FormControl>
+            <FormLabel>Replace redirect filename ( <Code>{'>'} output.log </Code> )</FormLabel>
+            <Input
+              placeholder="output"
+              value={newRedirectFileName}
+              onChange={(e) => setNewRedirectFileName(e.target.value)}
             />
           </FormControl>
         </Box>
