@@ -14,27 +14,24 @@ import { Argument, parseCommandLineArgs } from './parser'
 import JSONArgsViewer from './JSONArgsViewer';
 
 function transformArgs(args: Argument[], updatedInput: string, updatedOutput: string): Argument[] {
-  // argsをディープコピーする
   let result = args.map((arg) => ({ ...arg }));
 
-  // output の更新
   if (updatedOutput !== "") {
-    const foundOutputArg = result.find((arg) => arg.option === "-o");
-    if (foundOutputArg) {
+    const outputArg = result.findLast(arg => arg.option === "-o");
+    if (outputArg) {
       // "-o"が存在するなら、更新する
-      foundOutputArg.value = updatedOutput;
+      outputArg.value = updatedOutput;
     } else {
       // "-o"が存在しないなら、新規追加する
       result.push({ type: "option-space", option: "-o", value: updatedOutput });
     }
   }
 
-  // input の更新（配列内の最後の `type: "value"` の要素を入力ファイルとする）
   if (updatedInput !== "") {
-    const inputIndex = result.findLastIndex(arg => arg.type === "value");
-    if (inputIndex !== -1) {
+    const inputArg = result.findLast(arg => arg.type === "value");
+    if (inputArg) {
       // 入力ファイルが見つかった場合は更新する
-      result[inputIndex].value = updatedInput;
+      inputArg.value = updatedInput;
     } else {
       // 入力ファイルが見つからない場合は新規追加する
       result.push({ type: "value", option: "", value: updatedInput });
