@@ -20,6 +20,7 @@ import CommandLineArgsTable from './CommandLineArgsTable'
 import { Argument, parseCommandLineArgs } from './parser'
 import TextArgsViewer from './TextArgsViewer'
 import JSONArgsViewer from './JSONArgsViewer'
+import BashArgsViewer from './BashArgsViewer'
 
 function transformArgs(
   args: Argument[],
@@ -201,6 +202,7 @@ function App() {
           <TabList>
             <Tab>Text View</Tab>
             <Tab>JSON View</Tab>
+            <Tab>Bash View</Tab>
             <Tab>Table View</Tab>
           </TabList>
           <TabPanels minH="100">
@@ -209,6 +211,9 @@ function App() {
             </TabPanel>
             <TabPanel>
               <JSONArgsViewer parsedArgs={transformedArgs} />
+            </TabPanel>
+            <TabPanel>
+              <BashArgsViewer parsedArgs={transformedArgs} />
             </TabPanel>
             <TabPanel>
               <CommandLineArgsTable args={transformedArgs} />
