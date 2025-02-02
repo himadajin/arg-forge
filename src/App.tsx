@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import {
   Box,
   ChakraProvider,
+  Checkbox,
   Code,
   Container,
   FormControl,
@@ -13,6 +14,7 @@ import {
   TabPanels,
   Tab,
   TabPanel,
+  HStack,
 } from '@chakra-ui/react'
 import CommandLineArgsTable from './CommandLineArgsTable';
 import { Argument, parseCommandLineArgs } from './parser'
@@ -22,8 +24,13 @@ function transformArgs(
   args: Argument[],
   updatedInput: string,
   updatedOutput: string,
-  newRedirectFileName: string
+  newRedirectFileName: string,
+  removeHeadCmd: boolean,
 ): Argument[] {
+  if (args.length === 0) {
+    return [];
+  }
+
   let result = args.map((arg) => ({ ...arg }));
 
   if (updatedOutput !== "") {
@@ -56,6 +63,12 @@ function transformArgs(
       result.push({ type: "redirect", option: ">", value: newRedirectFileName });
     }
   }
+
+  // remove head command if needed
+  if (removeHeadCmd && result[0].type === "value") {
+    result.shift();
+  }
+
   return result;
 }
 
@@ -83,12 +96,15 @@ function App() {
   const [updatedInputFile, setUpdatedInputFile] = useState("");
   const [newRedirectFileName, setNewRedirectFileName] = useState("");
 
+  const [removeHeadCmd, setRemoveHeadCmd] = useState(false);
+
   const parsedArgs = useMemo(
     () => parseCommandLineArgs(commandLineInput, spaceOptions),
     [commandLineInput, spaceOptions]
   );
   const transformedArgs = useMemo(
-    () => transformArgs(parsedArgs, updatedInputFile, outputFile, newRedirectFileName),
+    () => transformArgs(
+      parsedArgs, updatedInputFile, outputFile, newRedirectFileName, removeHeadCmd),
     [parsedArgs, updatedInputFile, outputFile, newRedirectFileName]
   );
 
@@ -106,7 +122,7 @@ function App() {
             onChange={(e) => setCommandLineInput(e.target.value)}
           />
         </FormControl>
-        <Box py={4}>
+        <Box py={2}>
           <FormControl>
             <FormLabel>Replace input filename</FormLabel>
             <Input
@@ -116,7 +132,7 @@ function App() {
             />
           </FormControl>
         </Box>
-        <Box pb={4}>
+        <Box py={2}>
           <FormControl>
             <FormLabel>Replace output filename ( <Code>-o</Code> )</FormLabel>
             <Input
@@ -126,7 +142,7 @@ function App() {
             />
           </FormControl>
         </Box>
-        <Box pb={4}>
+        <Box py={2}>
           <FormControl>
             <FormLabel>Replace redirect filename ( <Code>{'>'} output.log </Code> )</FormLabel>
             <Input
@@ -136,7 +152,17 @@ function App() {
             />
           </FormControl>
         </Box>
-        <Tabs>
+
+        <HStack spacing={4} py={4}>
+          <Checkbox
+            checked={removeHeadCmd}
+            onChange={(e) => setRemoveHeadCmd(e.target.checked)}
+          >
+            Remove head command.
+          </Checkbox>
+        </HStack>
+
+        <Tabs pt={8}>
           <TabList>
             <Tab>JSON View</Tab>
             <Tab>Table View</Tab>
